@@ -1,0 +1,5 @@
+build/
+poisson_equation.cpp
+poisson_equation.cpython-312-x86_64-linux-gnu.so
+poisson_equation.html
+.vscode/
