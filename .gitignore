@@ -3,3 +3,8 @@ poisson_equation.cpp
 poisson_equation.cpython-312-x86_64-linux-gnu.so
 poisson_equation.html
 .vscode/
+
+# git status          # Проверяем статус
+# git add .           # Добавляем все изменения
+# git commit -m "Сообщение коммита"   # Создаём коммит
+# git push origin main 
