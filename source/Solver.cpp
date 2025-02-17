@@ -49,17 +49,20 @@ void Solver_Jacobi::solve(Array2D<double> &potential_data, std::span<double> bou
             }
         }
 
-        #pragma omp parallel for reduction(max: error)
-        for (size_t i = 1; i < N - 1; ++i) {
-            for (size_t j = 1; j < N - 1; ++j) {
-                error = std::max(error, std::fabs(u_new(i, j) - u(i, j)));
-            }
+        double trace_u = 0.0, trace_u_new = 0.0;
+        for (size_t i = 0; i < N; ++i) {
+            trace_u += u(i, i);         
+            trace_u_new += u_new(i, i);
         }
+
+        error = std::fabs((trace_u_new - trace_u) / trace_u);
 
         u = u_new;
         iteration_curr++;
 
-    } while (error > precision || iteration_curr < iteration);
+    } while (error > precision);
+    // } while (error > precision || iteration_curr < iteration);
+
 
     potential_data = u_new;
     // std::string file_trajectory = "/home/anton/MEPhI/Progs/Poisson_equation/build/data.txt";
