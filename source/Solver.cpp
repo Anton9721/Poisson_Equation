@@ -3,7 +3,7 @@
 #include <vector>
 #include <span>
 
-void Solver_Jacobi::solve(Array2D<double> &potential_data, std::span<double> boundary_conditions, Array2D<double> source, const int nod_number, const int iteration, const double precision) const
+void Solver_Jacobi::solve(Array2D<double> &potential_data, std::span<double> boundary_conditions, Array2D<double> source, const int nod_number, const int iteration, const double precision, const double omega) const
 {
     size_t N = nod_number;
     const double h = 1.0 / (N - 1); 
@@ -60,7 +60,8 @@ void Solver_Jacobi::solve(Array2D<double> &potential_data, std::span<double> bou
         u = u_new;
         iteration_curr++;
 
-    } while (error > precision);
+    // } while (error > precision);
+    } while (iteration_curr < iteration);
     // } while (error > precision || iteration_curr < iteration);
 
 
@@ -71,3 +72,97 @@ void Solver_Jacobi::solve(Array2D<double> &potential_data, std::span<double> bou
 
 
 };
+
+
+void Solver_Gauss::solve(Array2D<double> &potential_data, std::span<double> boundary_conditions, Array2D<double> source, const int nod_number, const int iteration, const double precision, const double omega) const
+{
+    size_t N = nod_number;
+    const double h = 1.0 / (N - 1);
+
+    Array2D<double> u(N, N);
+    Array2D<double> f(N, N);
+
+    // Граничные условия
+    for (size_t i = 0; i < N; ++i) {
+        u(i, N - 1) = boundary_conditions[i + N];  // Правая граница
+        u(N - 1, i) = boundary_conditions[i + 2 * N];  // Нижняя граница
+        u(i, 0) = boundary_conditions[i + 3 * N]; // Левая граница
+        u(0, i) = boundary_conditions[i];  // Верхняя граница
+    }
+
+    for (size_t i = 0; i < N; ++i) {
+        for (size_t j = 0; j < N; ++j) {
+            f(i, j) = -4 * std::numbers::pi * source(j, i);
+        }
+    }
+
+    int iteration_curr = 0;
+    double error;
+
+    do {
+        error = 0.0;
+
+        #pragma omp parallel for collapse(2)
+        for (size_t i = 1; i < N - 1; ++i) {
+            for (size_t j = 1; j < N - 1; ++j) {
+                double old_value = u(i, j);
+                u(i, j) = 0.25 * (u(i + 1, j) + u(i - 1, j) + u(i, j + 1) + u(i, j - 1) - h * h * f(i, j));
+                error = std::max(error, std::fabs(u(i, j) - old_value));
+            }
+        }
+
+        iteration_curr++;
+
+    // } while (error > precision);
+    } while (iteration_curr < iteration);
+    // } while (error > precision || iteration_curr < iteration);
+
+    potential_data = u;
+}
+
+
+void Solver_over_relaxation::solve(Array2D<double> &potential_data, std::span<double> boundary_conditions, Array2D<double> source, const int nod_number, const int iteration, const double precision, const double omega) const
+{
+    size_t N = nod_number;
+    const double h = 1.0 / (N - 1);
+
+    Array2D<double> u(N, N);
+    Array2D<double> f(N, N);
+
+    // Граничные условия
+    for (size_t i = 0; i < N; ++i) {
+        u(i, N - 1) = boundary_conditions[i + N];  // Правая граница
+        u(N - 1, i) = boundary_conditions[i + 2 * N];  // Нижняя граница
+        u(i, 0) = boundary_conditions[i + 3 * N]; // Левая граница
+        u(0, i) = boundary_conditions[i];  // Верхняя граница
+    }
+
+    for (size_t i = 0; i < N; ++i) {
+        for (size_t j = 0; j < N; ++j) {
+            f(i, j) = -4 * std::numbers::pi * source(j, i);
+        }
+    }
+
+    int iteration_curr = 0;
+    double error;
+
+    do {
+        error = 0.0;
+
+        #pragma omp parallel for collapse(2)
+        for (size_t i = 1; i < N - 1; ++i) {
+            for (size_t j = 1; j < N - 1; ++j) {
+                double old_value = u(i, j);
+                double new_value = 0.25 * (u(i + 1, j) + u(i - 1, j) + u(i, j + 1) + u(i, j - 1) - h * h * f(i, j));
+                u(i, j) = old_value + omega * (new_value - old_value);
+                error = std::max(error, std::fabs(u(i, j) - old_value));
+            }
+        }
+
+        iteration_curr++;
+
+    // } while (error > precision);
+    } while (iteration_curr < iteration);
+    // } while (error > precision || iteration_curr < iteration);
+    potential_data = u;
+}

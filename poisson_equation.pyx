@@ -9,7 +9,8 @@ cdef extern from "include/Library.hpp":
                                    vector[double] source, 
                                    int nod_number, 
                                    int iteration, 
-                                   double precision)
+                                   double precision, 
+                                   double omega)
 
 cdef vector[double] python_list_to_vector(cnp.ndarray[cnp.double_t, ndim=1] np_array):
     cdef vector[double] cpp_vector
@@ -22,8 +23,8 @@ def vector_to_python_list(vector[double] cpp_vector):
 
 def potential_result(solver_name: str, boundary_conditions, 
                      source, nod_number: int, 
-                     iteration: int, precision: float):
-    all_solvers = ['Solver_Jacobi']
+                     iteration: int, precision: float, omega: float = 0):
+    all_solvers = ['Solver_Jacobi', "Solver_Gauss", "Solver_over_relaxation"]
     
     if solver_name not in all_solvers:
         print(f"Не существует метода решения {solver_name}. Проверьте правильность написания!")
@@ -46,6 +47,7 @@ def potential_result(solver_name: str, boundary_conditions,
                                                        cpp_source, 
                                                        nod_number, 
                                                        iteration, 
-                                                       precision)
+                                                       precision, 
+                                                       omega)
 
     return vector_to_python_list(result_vector)

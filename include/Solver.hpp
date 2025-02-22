@@ -11,7 +11,7 @@
 
 class Solver{
 public:
-    virtual void solve(Array2D<double> &potential_data, std::span<double> boundary_conditions, Array2D<double> source, const int nod_number, const int iteration, const double precision) const = 0;
+    virtual void solve(Array2D<double> &potential_data, std::span<double> boundary_conditions, Array2D<double> source, const int nod_number, const int iteration, const double precision, const double omega) const = 0;
     virtual ~Solver() = default;          
 
 };
@@ -20,5 +20,19 @@ public:
 class Solver_Jacobi : public Solver
 {
     public:
-        void solve(Array2D<double> &potential_data, std::span<double> boundary_conditions, Array2D<double> source, const int nod_number, const int iteration, const double precision) const override;
+        void solve(Array2D<double> &potential_data, std::span<double> boundary_conditions, Array2D<double> source, const int nod_number, const int iteration, const double precision, const double omega) const override;
+};
+
+//Решение методом Гаусса Зейделя
+class Solver_Gauss : public Solver
+{
+    public:
+        void solve(Array2D<double> &potential_data, std::span<double> boundary_conditions, Array2D<double> source, const int nod_number, const int iteration, const double precision, const double omega) const override;
+};
+
+//Решение методом Сверхрелаксации
+class Solver_over_relaxation: public Solver
+{
+    public:
+        void solve(Array2D<double> &potential_data, std::span<double> boundary_conditions, Array2D<double> source, const int nod_number, const int iteration, const double precision, const double omega) const override;
 };

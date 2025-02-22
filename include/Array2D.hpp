@@ -19,7 +19,7 @@ public:
     {
         for (size_t i = 0; i < rows * cols; ++i)
         {
-            data[i] = 0;
+            data[i] = 1.0;
         }
     }
 
@@ -42,65 +42,6 @@ public:
         return os;
     }
     
-
-    
-    Array2D<T> operator+(Array2D<T> &other)
-    {
-        Array2D<T> result(rows, cols);
-        for (size_t i = 0; i < rows * cols; ++i)
-        {
-            result.data[i] = data[i] + other.data[i];
-        }
-        return result;
-    }
-
-    Array2D<T> operator-(Array2D<T> &other)
-    {
-        Array2D<T> result(rows, cols);
-        for (size_t i = 0; i < rows * cols; ++i)
-        {
-            result.data[i] = data[i] - other.data[i];
-        }
-        return result;
-    }
-
-    friend Array2D<T> operator*(const T &scalar, Array2D<T> &matrix)
-    {
-        Array2D<T> result(matrix.rows, matrix.cols);
-        #pragma omp parallel for
-        for (size_t i = 0; i < matrix.rows; ++i)
-        {
-            for (size_t j = 0; j < matrix.cols; ++j)
-            {
-                result.data[i * matrix.cols + j] = scalar * matrix.data[i * matrix.cols + j];
-            }
-        }
-        return result;
-    }
-
-    friend Array2D<T> operator*(Array2D<T> &matrix, const T &scalar)
-    {
-        return scalar * matrix;
-    }
-
-    Array2D<T> operator*(Array2D<T> &other)
-    {
-        Array2D<T> result(rows, other.cols);
-
-        #pragma omp parallel for
-        for (size_t i = 0; i < rows; ++i)
-        {
-            for (size_t j = 0; j < other.cols; ++j)
-            {
-                result(i, j) = 0;
-                for (size_t k = 0; k < cols; ++k)
-                {
-                    result(i, j) += (*this)(i, k) * other(k, j);
-                }
-            }
-        }
-        return result;
-    }
 
     std::span<T> get_span() { return std::span<T>(data); }
 
