@@ -155,7 +155,7 @@ void Solver_over_relaxation::solve(Array2D<double> &potential_data, std::span<do
                 double old_value = u(i, j);
                 double new_value = 0.25 * (u(i + 1, j) + u(i - 1, j) + u(i, j + 1) + u(i, j - 1) - h * h * f(i, j));
                 u(i, j) = old_value + omega * (new_value - old_value);
-                error = std::max(error, std::fabs(u(i, j) - old_value));
+                // error = std::max(error, std::fabs(u(i, j) - old_value));
             }
         }
 

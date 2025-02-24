@@ -19,7 +19,7 @@ public:
     {
         for (size_t i = 0; i < rows * cols; ++i)
         {
-            data[i] = 1.0;
+            data[i] = 0.0;
         }
     }
 
